@@ -1,3 +1,4 @@
+name: api-server
 services:
   postgres:
    image: postgres:18-bookworm 
@@ -7,9 +8,7 @@ services:
     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     - POSTGRES_DB=${POSTGRES_DB}
    volumes:
-    - ./out/pgdata:/var/lib/postgresql
-   ports:
-   - "5432:5432" #Временно не для деплоя 
+    - ${PROJECT_ROOT}/out/pgdata:/var/lib/postgresql
    restart: always
    healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -21,10 +20,8 @@ services:
   redis:
     image: redis:7.4
     container_name: go-cash-redis
-    ports:
-      - "6379:6379"
     volumes:
-      - ./out/redisdata:/data
+      - ${PROJECT_ROOT}/out/redisdata:/data
     environment:
       - MAX_MEMORY=${MAX_MEMORY:-100mb}
     command:
@@ -37,27 +34,32 @@ services:
     image: clickhouse/clickhouse-server:22.10
     container_name: env-clickhouse
     user: "101:101"
-    ports:
-      - "8123:8123"   # HTTP-интерфейс (для API запросов, Grafana, curl)
-      - "9000:9000"   # Нативный TCP-протокол (для clickhouse-client)
-      - "9444:9444"   # HTTPS-интерфейс (опционально)
     volumes:
-      - "./out/clickhousedata:/var/lib/clickhouse"
-      - "./repository/config.xml:/config.xml:ro"
+      - "${PROJECT_ROOT}/out/clickhousedata:/var/lib/clickhouse"
+      #- "${PROJECT_ROOT}/repository/config.xml:/config.xml:ro"
     environment:
       - CLICKHOUSE_DB=${CLICKHOUSE_DB} 
       - CLICKHOUSE_CONFIG=/config.xml
     command: ["clickhouse-server"]
     restart: always
 
-  postgres-migrate:
+  migrate:
     image: migrate/migrate:v4.19.1
     volumes:
-    - ./migrations:/migrations
+    - ${PROJECT_ROOT}/migrations:/migrations
 
   port-forwarder:
     image: alpine/socat:1.8.0.3
-    container_name: bot-postgres-port-forwarder
-    command: tcp-listen:5432,fork,reuseaddr tcp-connect:bot-postgres:5432
+    container_name: port-forwarder
+    command: 
+    - tcp-listen:5432,fork,reuseaddr tcp-connect:postgres:5432
+    - tcp-listen:6379,fork,reuseaddr tcp-connect:redis:6379
+    - tcp-listen:8123,fork,reuseaddr tcp-connect:clickhouse:8123
+    - tcp-listen:9000,fork,reuseaddr tcp-connect:clickhouse:9000
+    - tcp-listen:9444,fork,reuseaddr tcp-connect:clickhouse:9444
     ports:
-    - "127.0.0.1:5432:5432"
+    - "127.0.0.1:5432:5432" # postgres port
+    - "127.0.0.1:6379:6379" # redis port
+    - "127.0.0.1:8123:8123" # clickhouse port HTTP-интерфейс (для API запросов, Grafana, curl)
+    - "127.0.0.1:9000:9000" # clickhouse port Нативный TCP-протокол (для clickhouse-client)
+    - "127.0.0.1:9444:9444" # clickhouse port HTTPS-интерфейс 

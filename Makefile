@@ -6,15 +6,15 @@ CLICKHOUSE_URL=clickhouse://${CLICKHOUSE_HOST}?username=${CLICKHOUSE_USER}&passw
 
 env-up:
 	@$(MAKE) redis-up
-	@$(MAKE) clickhouse-up
+
 	@$(MAKE) postgres-up
 	@$(MAKE) port-forwarder-up
 
 env-down:
 	@$(MAKE) redis-down
-	@$(MAKE) clickhouse-down
+
 	@$(MAKE) postgres-down
-	@$(MAKE) port-forwarder-down
+	@$(MAKE) port-forwarder-close
 	@$(MAKE) env-cleanup
 
 postgres-up:
@@ -38,10 +38,10 @@ clickhouse-down:
 	@docker compose down clickhouse
 
 port-forwarder-up:
-	@docker compose up -d port-forwarder
+	@docker compose up -d multi-forwarder
 
-port-forwarder-down:
-	@docker compose down port-forwarder
+port-forwarder-close:
+	@docker compose down multi-forwarder
 
 migrate-postgres-create:
 	@if [ -z "$(seq)" ]; then \
@@ -107,3 +107,6 @@ env-cleanup:
 	else \
 		echo "Отчистка окружения отменена."; \
 	fi;
+
+run:
+	go run cmd/todoapp/main.go

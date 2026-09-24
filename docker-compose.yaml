@@ -48,18 +48,17 @@ services:
     volumes:
     - ${PROJECT_ROOT}/migrations:/migrations
 
-  port-forwarder:
-    image: alpine/socat:1.8.0.3
-    container_name: port-forwarder
-    command: 
-    - tcp-listen:5432,fork,reuseaddr tcp-connect:postgres:5432
-    - tcp-listen:6379,fork,reuseaddr tcp-connect:redis:6379
-    - tcp-listen:8123,fork,reuseaddr tcp-connect:clickhouse:8123
-    - tcp-listen:9000,fork,reuseaddr tcp-connect:clickhouse:9000
-    - tcp-listen:9444,fork,reuseaddr tcp-connect:clickhouse:9444
+  multi-forwarder:
+    image: threatpatrols/multi-socat
+    environment:
+      MULTI_SOCAT_01: "TCP-LISTEN:5432,reuseaddr,fork TCP:postgres:5432"   # postgres port
+      MULTI_SOCAT_02: "TCP-LISTEN:6379,reuseaddr,fork TCP:redis:6379"      # redis port
+      MULTI_SOCAT_03: "TCP-LISTEN:8123,reuseaddr,fork TCP:clickhouse:8123" # clickhouse port HTTP-интерфейс (для API запросов, Grafana, curl)
+      MULTI_SOCAT_04: "TCP-LISTEN:9000,reuseaddr,fork TCP:clickhouse:9000" # clickhouse port Нативный TCP-протокол (для clickhouse-client)
+      MULTI_SOCAT_05: "TCP-LISTEN:9444,reuseaddr,fork TCP:clickhouse:9444" # clickhouse port HTTPS-интерфейс 
     ports:
-    - "127.0.0.1:5432:5432" # postgres port
-    - "127.0.0.1:6379:6379" # redis port
-    - "127.0.0.1:8123:8123" # clickhouse port HTTP-интерфейс (для API запросов, Grafana, curl)
-    - "127.0.0.1:9000:9000" # clickhouse port Нативный TCP-протокол (для clickhouse-client)
-    - "127.0.0.1:9444:9444" # clickhouse port HTTPS-интерфейс 
+      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:6379:6379"
+      - "127.0.0.1:8123:8123"
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9444:9444"

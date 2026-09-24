@@ -27,19 +27,19 @@ func NewHTTPServer(config config, log *core_logger.Logge, middleware ...core_htt
 	}
 }
 
-func (h *HTTPServer) RegisterAPIRouters(routers ...*APIVersionRouter) {
+func (s *HTTPServer) RegisterAPIRouters(routers ...*APIVersionRouter) {
 	for _, router := range routers {
 		prefix := "/api/" + string(router.apiVersion)
-		h.mux.Handle(prefix+"/", http.StripPrefix(prefix, router))
+		s.mux.Handle(prefix+"/", http.StripPrefix(prefix, router.WithMiddlware()))
 	}
 }
 
-func (h *HTTPServer) Run(ctx context.Context) error {
+func (s *HTTPServer) Run(ctx context.Context) error {
 	//навешиваем middleware на мультеплексер
-	mux := core_http_middleware.ChainMiddlare(h.mux, h.middleware...)
+	mux := core_http_middleware.ChainMiddlare(s.mux, s.middleware...)
 	//создаём сервер
 	server := &http.Server{
-		Addr:    h.config.Addr,
+		Addr:    s.config.Addr,
 		Handler: mux,
 	}
 	// потдержка плавного завершения
@@ -47,7 +47,7 @@ func (h *HTTPServer) Run(ctx context.Context) error {
 
 	go func() {
 		defer close(ch)
-		h.log.Warn("start HTTP server", zap.String("addr", h.config.Addr))
+		s.log.Warn("start HTTP server", zap.String("addr", s.config.Addr))
 		err := server.ListenAndServe()
 		if errors.Is(err, http.ErrServerClosed) {
 			ch <- err
@@ -58,16 +58,16 @@ func (h *HTTPServer) Run(ctx context.Context) error {
 	case err := <-ch:
 		return fmt.Errorf("listen and serve HTTP: %w", err)
 	case <-ctx.Done():
-		h.log.Warn("shutdown HTTP server ...")
+		s.log.Warn("shutdown HTTP server ...")
 
-		shutdownCtx, cansel := context.WithTimeout(context.Background(), h.config.ShutdownTimeout)
+		shutdownCtx, cansel := context.WithTimeout(context.Background(), s.config.ShutdownTimeout)
 		defer cansel()
 
 		if err := server.Shutdown(shutdownCtx); err != nil {
 			_ = server.Close()
 			return fmt.Errorf("shutdown HTTP server: %w", err)
 		}
-		h.log.Warn("HTTP server stopped")
+		s.log.Warn("HTTP server stopped")
 	}
 	return nil
 }

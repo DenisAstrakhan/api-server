@@ -11,13 +11,24 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// структура ключа логера для контекста
+type loggerContextKey struct{}
+
+var key loggerContextKey
+
+// нужен интерфейс логера. Подумать как реализовть
 type Logge struct {
 	*zap.Logger //(без названия поля) встроил zap.logger в свой логер (все методы zap.logger доступны теперь моему логеру)
 	file        *os.File
 }
 
+// создаём контекст с вложенным в него логером по ключу key
+func ToContext(ctx context.Context, logger *Logge) context.Context {
+	return context.WithValue(ctx, key, logger)
+}
+
 func FromContext(ctx context.Context) *Logge {
-	log, ok := ctx.Value("log").(*Logge)
+	log, ok := ctx.Value(key).(*Logge)
 	if !ok {
 		panic("no logger in context")
 	}

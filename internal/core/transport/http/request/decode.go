@@ -12,12 +12,25 @@ import (
 // создаём валидатор
 var requestValidator = validator.New()
 
+type validatable interface {
+	Validate() error
+}
+
 func DecodeAndValidateRequest(r *http.Request, dest any) error {
 	if err := json.NewDecoder(r.Body).Decode(dest); err != nil {
 		return fmt.Errorf("decode json: %v:%w", err, core_errors.ErrInvalidArgument)
 	}
-	// проводим валидацию
-	if err := requestValidator.Struct(dest); err != nil {
+	var err error
+	// проверяем имеет ли переданный тип кастомные правила валидации
+	v, ok := dest.(validatable) // проверяем подходит ли dest под интерфейс validatable
+	if ok {
+		//проводим кастомную валидацию
+		err = v.Validate()
+	} else {
+		// проводим обычную валидацию
+		err = requestValidator.Struct(dest)
+	}
+	if err != nil {
 		return fmt.Errorf("request validation: %v:%w", err, core_errors.ErrInvalidArgument)
 	}
 	return nil

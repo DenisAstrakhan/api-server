@@ -16,7 +16,7 @@ VALUES ($1,$2)
 RETURNING id, version, full_name, phone_number;
 `
 	row := r.pool.QueryRow(timectx, query, user.FullName, user.PhoneNumber)
-	var userModel UserModels
+	var userModel UserModel
 	err := row.Scan(
 		&userModel.ID,
 		&userModel.Version,

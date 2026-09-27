@@ -23,7 +23,7 @@ func (r *UsersRepository) PatchUser(ctx context.Context, id int, user domain.Use
 	RETURNING id, version, full_name, phone_number;
 	`
 	row := r.pool.QueryRow(timectx, query, user.FullName, user.PhoneNumber, id, user.Version)
-	var userModel UserModels
+	var userModel UserModel
 	err := row.Scan(
 		&userModel.ID,
 		&userModel.Version,

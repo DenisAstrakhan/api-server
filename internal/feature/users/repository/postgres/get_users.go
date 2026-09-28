@@ -23,9 +23,9 @@ func (r *UsersRepository) GetUsers(ctx context.Context, limit *int, offset *int)
 	}
 	defer rows.Close()
 
-	var userModels []UserModels
+	var userModels []UserModel
 	for rows.Next() {
-		var userModel UserModels
+		var userModel UserModel
 		err := rows.Scan(&userModel.ID, &userModel.Version, &userModel.FullName, &userModel.PhoneNumber)
 		if err != nil {
 			return nil, fmt.Errorf("scan users: %w", err)

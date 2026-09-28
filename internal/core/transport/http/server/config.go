@@ -8,7 +8,7 @@ import (
 )
 
 type config struct {
-	Addr            string        `envconfig:"ADDR" required:"true"` //адрес на котором запускаем сервер
+	Addr            string        `envconfig:"ADDR" validate:"required"` //адрес на котором запускаем сервер
 	ShutdownTimeout time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"5s"`
 }
 

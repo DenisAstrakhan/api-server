@@ -9,10 +9,10 @@ import (
 )
 
 type config struct {
-	Host     string        `envconfig:"HOST" required:"true"`
-	User     string        `envconfig:"USER" required:"true"`
-	Password string        `envconfig:"PASSWORD" required:"true"`
-	Database string        `envconfig:"DB" required:"true"`
+	Host     string        `envconfig:"HOST" validate:"required"`
+	User     string        `envconfig:"USER" validate:"required"`
+	Password string        `envconfig:"PASSWORD" validate:"required"`
+	Database string        `envconfig:"DB" validate:"required"`
 	Timeout  time.Duration `envconfig:"TIMEOUT" default:"5s"`
 }
 

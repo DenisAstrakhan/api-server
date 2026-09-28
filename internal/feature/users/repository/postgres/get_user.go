@@ -19,7 +19,7 @@ func (r *UsersRepository) GetUser(ctx context.Context, id int) (domain.User, err
 		WHERE id=$1;
 	`
 	row := r.pool.QueryRow(timectx, query, id)
-	var userModel UserModels
+	var userModel UserModel
 	err := row.Scan(
 		&userModel.ID,
 		&userModel.Version,

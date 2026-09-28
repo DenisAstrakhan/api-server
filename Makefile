@@ -66,10 +66,12 @@ migrate-postgres-action:
 	"$(action)"
 
 migrate-postgres-up:
-	@$(MAKE) migrate-postgres-action action=up 
+	@$(MAKE) migrate-postgres-action action=up \
+		POSTGRES_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
 
 migrate-postgres-down:
-	@$(MAKE) migrate-postgres-action action=down
+	@$(MAKE) migrate-postgres-action action=down \
+			POSTGRES_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
 
 migrate-clickhouse-create:
 	@if [ -z "$(seq)" ]; then \

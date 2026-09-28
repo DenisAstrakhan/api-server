@@ -84,3 +84,55 @@ func (t *Task) Validate() error {
 	}
 	return nil
 }
+
+type TaskPatch struct {
+	Title       Nullable[string] `json:"title"`
+	Description Nullable[string] `json:"description"`
+	Completed   Nullable[bool]   `json:"completed"`
+}
+
+func NewTaskPatch(title Nullable[string], description Nullable[string], completed Nullable[bool]) TaskPatch {
+	return TaskPatch{
+		Title:       title,
+		Description: description,
+		Completed:   completed,
+	}
+}
+
+func (p *TaskPatch) Validate() error {
+	if p.Title.Set && p.Title.Value == nil {
+		return fmt.Errorf("'Title' can't be patched to NULL: %w", core_errors.ErrInvalidArgument)
+	}
+	if p.Completed.Set && p.Completed.Value == nil {
+		return fmt.Errorf("'Completed' can't be patched to NULL: %w", core_errors.ErrInvalidArgument)
+	}
+	return nil
+}
+
+func (t *Task) ApplyPatch(p TaskPatch) error {
+	if err := p.Validate(); err != nil {
+		return fmt.Errorf("validate task patch: %w", err)
+	}
+	tmpTask := *t
+	if p.Title.Set {
+		tmpTask.Title = *p.Title.Value
+	}
+	if p.Description.Set {
+		tmpTask.Description = p.Description.Value
+	}
+	if p.Completed.Set {
+		tmpTask.Completed = *p.Completed.Value
+		if tmpTask.Completed {
+			completedAt := time.Now()
+			tmpTask.CompletedAt = &completedAt
+		} else {
+			tmpTask.CompletedAt = nil
+		}
+	}
+
+	if err := tmpTask.Validate(); err != nil {
+		return fmt.Errorf("validate patched task: %w", err)
+	}
+	*t = tmpTask
+	return nil
+}

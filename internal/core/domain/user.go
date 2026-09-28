@@ -72,7 +72,7 @@ func (p *UserPatch) Validate() error {
 }
 
 func (u *User) ApplyPatch(p UserPatch) error {
-	//dвалидируем патч
+	//валидируем патч
 	if err := p.Validate(); err != nil {
 		return fmt.Errorf("validate user patch: %w", err)
 	}

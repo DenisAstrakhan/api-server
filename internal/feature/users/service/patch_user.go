@@ -8,7 +8,7 @@ import (
 )
 
 func (s *UsersService) PatchUser(ctx context.Context, id int, patch domain.UserPatch) (domain.User, error) {
-	// получаем пользователяпо id
+	// получаем пользователя по id
 	user, err := s.usersRepository.GetUser(ctx, id)
 	if err != nil {
 		return domain.User{}, fmt.Errorf("get user from repository: %w", err)

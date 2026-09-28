@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	core_config "github.com/DenisAstrakhan/api-server/internal/core/config"
 	core_logger "github.com/DenisAstrakhan/api-server/internal/core/logger"
 	core_pgx_pool "github.com/DenisAstrakhan/api-server/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "github.com/DenisAstrakhan/api-server/internal/core/transport/http/middleware"
@@ -21,13 +22,11 @@ import (
 	"go.uber.org/zap"
 )
 
-var (
-	timeZone = time.UTC
-)
-
 func main() {
+	//получаем конфиг
+	cfg := core_config.NewConfig()
 	//выставляем таймзону
-	time.Local = timeZone
+	time.Local = cfg.TimeZone
 	// создаём контекст завязанный на системные сигналы
 	ctx, cansel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 	defer cansel()
@@ -39,7 +38,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer log.Close()
-	log.Debug("application time zone", zap.Any("zone", timeZone))
+	log.Debug("application time zone", zap.Any("zone", time.Local))
 
 	log.Debug("initiazling conection pool")
 	//pool, err := core_postgres_pool.NewConnectionPool(core_postgres_pool.NewConfigMast(), ctx)

@@ -10,7 +10,7 @@ import (
 func (r *TasksRepository) GetTsaks(ctx context.Context, userID *int, limit *int, offset *int) ([]domain.Task, error) {
 	timectx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
-	//
+
 	query := `
 		SELECT id, version, title, description, completed, created_at, completed_at, author_user_id
 		FROM todoapp.tasks

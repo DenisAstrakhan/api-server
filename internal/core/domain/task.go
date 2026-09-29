@@ -85,6 +85,19 @@ func (t *Task) Validate() error {
 	return nil
 }
 
+func (t *Task) CompletionDuration() *time.Duration {
+	if !t.Completed {
+		return nil
+	}
+
+	if t.CompletedAt == nil {
+		return nil
+	}
+	// вычитаем из CompletedAt CreatedAT
+	duration := t.CompletedAt.Sub(t.CreatedAT)
+	return &duration
+}
+
 type TaskPatch struct {
 	Title       Nullable[string] `json:"title"`
 	Description Nullable[string] `json:"description"`

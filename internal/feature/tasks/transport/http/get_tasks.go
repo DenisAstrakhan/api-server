@@ -20,7 +20,7 @@ func (h *TasksHTTPHandler) GetTasks(rw http.ResponseWriter, r *http.Request) {
 
 	userID, limit, offset, err := getUserIDLimitOffsetQueryParam(r)
 	if err != nil {
-		responseHendler.ErrorResponse(err, "failed to get 'user_id/limit'/'offset query param'")
+		responseHendler.ErrorResponse(err, "failed to get user_id/limit/offset query param")
 		return
 	}
 	tasksDomain, err := h.tasksService.GetTasks(ctx, userID, limit, offset)

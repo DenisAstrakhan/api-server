@@ -13,6 +13,9 @@ import (
 	core_pgx_pool "github.com/DenisAstrakhan/api-server/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "github.com/DenisAstrakhan/api-server/internal/core/transport/http/middleware"
 	core_http_server "github.com/DenisAstrakhan/api-server/internal/core/transport/http/server"
+	statistics_postgres_repository "github.com/DenisAstrakhan/api-server/internal/feature/statistics/repository/postgres"
+	statistics_service "github.com/DenisAstrakhan/api-server/internal/feature/statistics/service"
+	statistics_transport_http "github.com/DenisAstrakhan/api-server/internal/feature/statistics/transport/http"
 	tasks_postgres_repository "github.com/DenisAstrakhan/api-server/internal/feature/tasks/repository/postgres"
 	task_service "github.com/DenisAstrakhan/api-server/internal/feature/tasks/service"
 	tasks_transport_http "github.com/DenisAstrakhan/api-server/internal/feature/tasks/transport/http"
@@ -58,6 +61,11 @@ func main() {
 	tasksService := task_service.NewTasksService(tasksRepository)
 	tasksTransportHTTP := tasks_transport_http.NewTasksHTTPHandler(&tasksService)
 
+	log.Debug("initiazling feature", zap.String("feature", "statistics"))
+	statisticsRepository := statistics_postgres_repository.NewStatisticsRepository(pool)
+	statisticsService := statistics_service.NewStatisticsService(statisticsRepository)
+	statisticsTransportHTTP := statistics_transport_http.NewStatisticsHTTPHandler(&statisticsService)
+
 	log.Debug("initiazling HTTP server")
 	httpServer := core_http_server.NewHTTPServer(
 		core_http_server.NewConfigMust(),
@@ -70,6 +78,7 @@ func main() {
 	apiVersionRouterV1 := core_http_server.NewAPIVersionRouter(core_http_server.ApiVersion1)
 	apiVersionRouterV1.RegisterRoutes(usersTransportHTTP.Routes()...)
 	apiVersionRouterV1.RegisterRoutes(tasksTransportHTTP.Routes()...)
+	apiVersionRouterV1.RegisterRoutes(statisticsTransportHTTP.Routes()...)
 	//apiVersionRouterV2 := core_http_server.NewAPIVersionRouter(core_http_server.ApiVersion2, core_http_middleware.Dummy("API v2 middleware"))
 	//apiVersionRouterV2.RegisterRoutes(usersTransportHTTP.Routes()...)
 

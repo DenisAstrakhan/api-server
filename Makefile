@@ -112,3 +112,12 @@ env-cleanup:
 
 run:
 	go run cmd/todoapp/main.go
+
+#--parseDependency
+swagger-gen:
+	@docker compose run --rm swagger \
+		init \
+		-g cmd/todoapp/main.go \
+		-o docs \
+		--parseInternal \
+	

@@ -1,0 +1,819 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "REST-API scheme",
+        "title": "Golang API Server",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "127.0.0.1:5050",
+    "basePath": "/api/v1",
+    "paths": {
+        "/task": {
+            "get": {
+                "description": "Возвращает список задачь. Опчианально по user_id пользователя, с пагинацией",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Список задач",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "id пользователя",
+                        "name": "user_id",
+                        "in": "path"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Размер списка пользователей",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Смещение списка пользователей",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешно вернул список задач",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/tasks_transport_http.TaskDTOResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bed request",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tasks": {
+            "post": {
+                "description": "Создать новую задачу в системе с привязкой к пользователю",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Создать задачу",
+                "parameters": [
+                    {
+                        "description": "CreateTask тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/tasks_transport_http.CreateTaskRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Успешно созданная задача",
+                        "schema": {
+                            "$ref": "#/definitions/tasks_transport_http.CreateTaskResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bed request",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Author  not found",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tasks/{id}": {
+            "get": {
+                "description": "Возвращает задачу по id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Вщзвращает задачу",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "id возвращаемй звдвчи",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешно вернул задачу",
+                        "schema": {
+                            "$ref": "#/definitions/tasks_transport_http.GetTaskRespons"
+                        }
+                    },
+                    "400": {
+                        "description": "Bed request",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Task not found",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Удоляет задачу по id",
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Удоляет задачу",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "id удоляемой задачи",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Успешное удоление задачи"
+                    },
+                    "400": {
+                        "description": "Bed request",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Task not found",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Изменение существующей задачи по id\n### Логика обновления полей (Three-state logic):\n1. **Поле не передано** description игнорируется, значени в БД не меняется\n2. **Явно передано значение** \"description\":\"Сделать Геометрия\" устанавливает новое значение в БД\n3. **Выставленно null** \"description\":null значение удаляется из БД (set to null)\nОграничение title и completed не может быть null",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Изменение задачи",
+                "parameters": [
+                    {
+                        "description": "PatchTask тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/tasks_transport_http.PatchTaskRequest"
+                        }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "id изменяемой задачи",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешно изменённая задача",
+                        "schema": {
+                            "$ref": "#/definitions/tasks_transport_http.PatchTaskRespons"
+                        }
+                    },
+                    "400": {
+                        "description": "Bed request",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Task not found",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "description": "Возвращает список пользователя с опцианальной пагинацией",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Список пользователeй",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Размер списка пользователей",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Смещение списка пользователей",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешно вернул список пользователей",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/users_transport_http.UserDTOResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bed request",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создать нового пользователя в системе",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Создать пользователя",
+                "parameters": [
+                    {
+                        "description": "CreateUser тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/users_transport_http.CreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Успешно созданный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/users_transport_http.CreateUserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bed request",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "description": "Возвращает пользователя по id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Вщзвращает пользователя",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "id возвращаемого пользователя",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешно вернул пользователя",
+                        "schema": {
+                            "$ref": "#/definitions/users_transport_http.GetUserRespons"
+                        }
+                    },
+                    "400": {
+                        "description": "Bed request",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Удоляет пользователя по id",
+                "tags": [
+                    "users"
+                ],
+                "summary": "Удоляет пользователя",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "id удоляемого пользователя",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Успешное удоление пользователя"
+                    },
+                    "400": {
+                        "description": "Bed request",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Изменение существующего пользователя по id\n### Логика обновления полей (Three-state logic):\n1. **Поле не передано** phone_number игнорируется, значени в БД не меняется\n2. **Явно передано значение** \"phone_number\":\"+78889997766\" устанавливает новое значение в БД\n3. **Выставленно null** \"phone_number\":null значение удаляется из БД (set to null)\nОграничение full_name не может быть null",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Изменение пользователя",
+                "parameters": [
+                    {
+                        "description": "PatchUser тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/users_transport_http.PatchUserRequest"
+                        }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "id изменяемого пользователя",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешно изменённый пользователей",
+                        "schema": {
+                            "$ref": "#/definitions/users_transport_http.PatchUserRespons"
+                        }
+                    },
+                    "400": {
+                        "description": "Bed request",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "core_http_response.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "full error text"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "short human-readable message"
+                }
+            }
+        },
+        "tasks_transport_http.CreateTaskRequest": {
+            "type": "object",
+            "required": [
+                "author_user_id",
+                "title"
+            ],
+            "properties": {
+                "author_user_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "minLength": 1,
+                    "example": "Сделать Геометрию"
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "example": "Сделать домашку"
+                }
+            }
+        },
+        "tasks_transport_http.CreateTaskResponse": {
+            "type": "object",
+            "properties": {
+                "author_user_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "completed": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "completed_at": {
+                    "type": "string",
+                    "example": "2026-09-29T09:59:47.655618Z"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-09-25T16:03:38.661621Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Сделать Геометрия"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Сделать домашку"
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
+        "tasks_transport_http.GetTaskRespons": {
+            "type": "object",
+            "properties": {
+                "author_user_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "completed": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "completed_at": {
+                    "type": "string",
+                    "example": "2026-09-29T09:59:47.655618Z"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-09-25T16:03:38.661621Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Сделать Геометрия"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Сделать домашку"
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
+        "tasks_transport_http.PatchTaskRequest": {
+            "type": "object"
+        },
+        "tasks_transport_http.PatchTaskRespons": {
+            "type": "object",
+            "properties": {
+                "author_user_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "completed": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "completed_at": {
+                    "type": "string",
+                    "example": "2026-09-29T09:59:47.655618Z"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-09-25T16:03:38.661621Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Сделать Геометрия"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Сделать домашку"
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
+        "tasks_transport_http.TaskDTOResponse": {
+            "type": "object",
+            "properties": {
+                "author_user_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "completed": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "completed_at": {
+                    "type": "string",
+                    "example": "2026-09-29T09:59:47.655618Z"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-09-25T16:03:38.661621Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Сделать Геометрия"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Сделать домашку"
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
+        "users_transport_http.CreateUserRequest": {
+            "type": "object",
+            "required": [
+                "full_name"
+            ],
+            "properties": {
+                "full_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3,
+                    "example": "Ivanov Ivan"
+                },
+                "phone_number": {
+                    "type": "string",
+                    "maxLength": 15,
+                    "minLength": 10,
+                    "example": "+79998887766"
+                }
+            }
+        },
+        "users_transport_http.CreateUserResponse": {
+            "type": "object",
+            "properties": {
+                "full_name": {
+                    "type": "string",
+                    "example": "Ivanov Ivan"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "phone_number": {
+                    "type": "string",
+                    "example": "+79998887766"
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "users_transport_http.GetUserRespons": {
+            "type": "object",
+            "properties": {
+                "full_name": {
+                    "type": "string",
+                    "example": "Ivanov Ivan"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "phone_number": {
+                    "type": "string",
+                    "example": "+79998887766"
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "users_transport_http.PatchUserRequest": {
+            "type": "object",
+            "properties": {
+                "full_name": {
+                    "type": "string",
+                    "example": "Ivanov Ivan"
+                },
+                "phone_number": {
+                    "type": "string",
+                    "example": "+71112223344"
+                }
+            }
+        },
+        "users_transport_http.PatchUserRespons": {
+            "type": "object",
+            "properties": {
+                "full_name": {
+                    "type": "string",
+                    "example": "Ivanov Ivan"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "phone_number": {
+                    "type": "string",
+                    "example": "+79998887766"
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "users_transport_http.UserDTOResponse": {
+            "type": "object",
+            "properties": {
+                "full_name": {
+                    "type": "string",
+                    "example": "Ivanov Ivan"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "phone_number": {
+                    "type": "string",
+                    "example": "+79998887766"
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        }
+    }
+}

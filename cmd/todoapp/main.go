@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/DenisAstrakhan/api-server/docs"
 	core_config "github.com/DenisAstrakhan/api-server/internal/core/config"
 	core_logger "github.com/DenisAstrakhan/api-server/internal/core/logger"
 	core_pgx_pool "github.com/DenisAstrakhan/api-server/internal/core/repository/postgres/pool/pgx"
@@ -25,6 +26,11 @@ import (
 	"go.uber.org/zap"
 )
 
+// @title        Golang API Server
+// @version      1.0
+// @description  REST-API scheme
+// @host         127.0.0.1:5050
+// @BasePath     /api/v1
 func main() {
 	//получаем конфиг
 	cfg := core_config.NewConfig()
@@ -70,6 +76,7 @@ func main() {
 	httpServer := core_http_server.NewHTTPServer(
 		core_http_server.NewConfigMust(),
 		log,
+		core_http_middleware.CORS(),
 		core_http_middleware.RequestID(),
 		core_http_middleware.Loger(log),
 		core_http_middleware.Trace(),
@@ -83,6 +90,7 @@ func main() {
 	//apiVersionRouterV2.RegisterRoutes(usersTransportHTTP.Routes()...)
 
 	httpServer.RegisterAPIRouters(apiVersionRouterV1 /*apiVersionRouterV2*/)
+	httpServer.RegisterSwagger()
 
 	if err := httpServer.Run(ctx); err != nil {
 		log.Error("HTTP server run error: %w", zap.Error(err))

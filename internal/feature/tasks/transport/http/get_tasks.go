@@ -11,6 +11,18 @@ import (
 
 type GetTasksResponse []TaskDTOResponse
 
+// GetTasks godoc
+// @Summary Список задач
+// @Description Возвращает список задачь. Опчианально по user_id пользователя, с пагинацией
+// @Tags tasks
+// @Produce json
+// @Param user_id path int false "id пользователя"
+// @Param limit query int false "Размер списка пользователей"
+// @Param offset query int false "Смещение списка пользователей"
+// @Success 200 {object} GetTasksResponse "Успешно вернул список задач"
+// @Failure 400 {object} core_http_response.ErrorResponse "Bed request"
+// @Failure 500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router /task [get]
 func (h *TasksHTTPHandler) GetTasks(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)

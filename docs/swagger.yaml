@@ -1,0 +1,574 @@
+basePath: /api/v1
+definitions:
+  core_http_response.ErrorResponse:
+    properties:
+      error:
+        example: full error text
+        type: string
+      message:
+        example: short human-readable message
+        type: string
+    type: object
+  tasks_transport_http.CreateTaskRequest:
+    properties:
+      author_user_id:
+        example: 1
+        type: integer
+      description:
+        example: Сделать Геометрию
+        maxLength: 1000
+        minLength: 1
+        type: string
+      title:
+        example: Сделать домашку
+        maxLength: 100
+        minLength: 1
+        type: string
+    required:
+    - author_user_id
+    - title
+    type: object
+  tasks_transport_http.CreateTaskResponse:
+    properties:
+      author_user_id:
+        example: 1
+        type: integer
+      completed:
+        example: true
+        type: boolean
+      completed_at:
+        example: "2026-09-29T09:59:47.655618Z"
+        type: string
+      created_at:
+        example: "2026-09-25T16:03:38.661621Z"
+        type: string
+      description:
+        example: Сделать Геометрия
+        type: string
+      id:
+        example: 1
+        type: integer
+      title:
+        example: Сделать домашку
+        type: string
+      version:
+        example: 2
+        type: integer
+    type: object
+  tasks_transport_http.GetTaskRespons:
+    properties:
+      author_user_id:
+        example: 1
+        type: integer
+      completed:
+        example: true
+        type: boolean
+      completed_at:
+        example: "2026-09-29T09:59:47.655618Z"
+        type: string
+      created_at:
+        example: "2026-09-25T16:03:38.661621Z"
+        type: string
+      description:
+        example: Сделать Геометрия
+        type: string
+      id:
+        example: 1
+        type: integer
+      title:
+        example: Сделать домашку
+        type: string
+      version:
+        example: 2
+        type: integer
+    type: object
+  tasks_transport_http.PatchTaskRequest:
+    type: object
+  tasks_transport_http.PatchTaskRespons:
+    properties:
+      author_user_id:
+        example: 1
+        type: integer
+      completed:
+        example: true
+        type: boolean
+      completed_at:
+        example: "2026-09-29T09:59:47.655618Z"
+        type: string
+      created_at:
+        example: "2026-09-25T16:03:38.661621Z"
+        type: string
+      description:
+        example: Сделать Геометрия
+        type: string
+      id:
+        example: 1
+        type: integer
+      title:
+        example: Сделать домашку
+        type: string
+      version:
+        example: 2
+        type: integer
+    type: object
+  tasks_transport_http.TaskDTOResponse:
+    properties:
+      author_user_id:
+        example: 1
+        type: integer
+      completed:
+        example: true
+        type: boolean
+      completed_at:
+        example: "2026-09-29T09:59:47.655618Z"
+        type: string
+      created_at:
+        example: "2026-09-25T16:03:38.661621Z"
+        type: string
+      description:
+        example: Сделать Геометрия
+        type: string
+      id:
+        example: 1
+        type: integer
+      title:
+        example: Сделать домашку
+        type: string
+      version:
+        example: 2
+        type: integer
+    type: object
+  users_transport_http.CreateUserRequest:
+    properties:
+      full_name:
+        example: Ivanov Ivan
+        maxLength: 100
+        minLength: 3
+        type: string
+      phone_number:
+        example: "+79998887766"
+        maxLength: 15
+        minLength: 10
+        type: string
+    required:
+    - full_name
+    type: object
+  users_transport_http.CreateUserResponse:
+    properties:
+      full_name:
+        example: Ivanov Ivan
+        type: string
+      id:
+        example: 1
+        type: integer
+      phone_number:
+        example: "+79998887766"
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
+  users_transport_http.GetUserRespons:
+    properties:
+      full_name:
+        example: Ivanov Ivan
+        type: string
+      id:
+        example: 1
+        type: integer
+      phone_number:
+        example: "+79998887766"
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
+  users_transport_http.PatchUserRequest:
+    properties:
+      full_name:
+        example: Ivanov Ivan
+        type: string
+      phone_number:
+        example: "+71112223344"
+        type: string
+    type: object
+  users_transport_http.PatchUserRespons:
+    properties:
+      full_name:
+        example: Ivanov Ivan
+        type: string
+      id:
+        example: 1
+        type: integer
+      phone_number:
+        example: "+79998887766"
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
+  users_transport_http.UserDTOResponse:
+    properties:
+      full_name:
+        example: Ivanov Ivan
+        type: string
+      id:
+        example: 1
+        type: integer
+      phone_number:
+        example: "+79998887766"
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
+host: 127.0.0.1:5050
+info:
+  contact: {}
+  description: REST-API scheme
+  title: Golang API Server
+  version: "1.0"
+paths:
+  /task:
+    get:
+      description: Возвращает список задачь. Опчианально по user_id пользователя,
+        с пагинацией
+      parameters:
+      - description: id пользователя
+        in: path
+        name: user_id
+        type: integer
+      - description: Размер списка пользователей
+        in: query
+        name: limit
+        type: integer
+      - description: Смещение списка пользователей
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешно вернул список задач
+          schema:
+            items:
+              $ref: '#/definitions/tasks_transport_http.TaskDTOResponse'
+            type: array
+        "400":
+          description: Bed request
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Список задач
+      tags:
+      - tasks
+  /tasks:
+    post:
+      consumes:
+      - application/json
+      description: Создать новую задачу в системе с привязкой к пользователю
+      parameters:
+      - description: CreateTask тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/tasks_transport_http.CreateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Успешно созданная задача
+          schema:
+            $ref: '#/definitions/tasks_transport_http.CreateTaskResponse'
+        "400":
+          description: Bed request
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "404":
+          description: Author  not found
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Создать задачу
+      tags:
+      - tasks
+  /tasks/{id}:
+    delete:
+      description: Удоляет задачу по id
+      parameters:
+      - description: id удоляемой задачи
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Успешное удоление задачи
+        "400":
+          description: Bed request
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "404":
+          description: Task not found
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Удоляет задачу
+      tags:
+      - tasks
+    get:
+      description: Возвращает задачу по id
+      parameters:
+      - description: id возвращаемй звдвчи
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешно вернул задачу
+          schema:
+            $ref: '#/definitions/tasks_transport_http.GetTaskRespons'
+        "400":
+          description: Bed request
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "404":
+          description: Task not found
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Вщзвращает задачу
+      tags:
+      - tasks
+    patch:
+      consumes:
+      - application/json
+      description: |-
+        Изменение существующей задачи по id
+        ### Логика обновления полей (Three-state logic):
+        1. **Поле не передано** description игнорируется, значени в БД не меняется
+        2. **Явно передано значение** "description":"Сделать Геометрия" устанавливает новое значение в БД
+        3. **Выставленно null** "description":null значение удаляется из БД (set to null)
+        Ограничение title и completed не может быть null
+      parameters:
+      - description: PatchTask тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/tasks_transport_http.PatchTaskRequest'
+      - description: id изменяемой задачи
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешно изменённая задача
+          schema:
+            $ref: '#/definitions/tasks_transport_http.PatchTaskRespons'
+        "400":
+          description: Bed request
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "404":
+          description: Task not found
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Изменение задачи
+      tags:
+      - tasks
+  /users:
+    get:
+      description: Возвращает список пользователя с опцианальной пагинацией
+      parameters:
+      - description: Размер списка пользователей
+        in: query
+        name: limit
+        type: integer
+      - description: Смещение списка пользователей
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешно вернул список пользователей
+          schema:
+            items:
+              $ref: '#/definitions/users_transport_http.UserDTOResponse'
+            type: array
+        "400":
+          description: Bed request
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Список пользователeй
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Создать нового пользователя в системе
+      parameters:
+      - description: CreateUser тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/users_transport_http.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Успешно созданный пользователь
+          schema:
+            $ref: '#/definitions/users_transport_http.CreateUserResponse'
+        "400":
+          description: Bed request
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Создать пользователя
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      description: Удоляет пользователя по id
+      parameters:
+      - description: id удоляемого пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Успешное удоление пользователя
+        "400":
+          description: Bed request
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Удоляет пользователя
+      tags:
+      - users
+    get:
+      description: Возвращает пользователя по id
+      parameters:
+      - description: id возвращаемого пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешно вернул пользователя
+          schema:
+            $ref: '#/definitions/users_transport_http.GetUserRespons'
+        "400":
+          description: Bed request
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Вщзвращает пользователя
+      tags:
+      - users
+    patch:
+      consumes:
+      - application/json
+      description: |-
+        Изменение существующего пользователя по id
+        ### Логика обновления полей (Three-state logic):
+        1. **Поле не передано** phone_number игнорируется, значени в БД не меняется
+        2. **Явно передано значение** "phone_number":"+78889997766" устанавливает новое значение в БД
+        3. **Выставленно null** "phone_number":null значение удаляется из БД (set to null)
+        Ограничение full_name не может быть null
+      parameters:
+      - description: PatchUser тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/users_transport_http.PatchUserRequest'
+      - description: id изменяемого пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешно изменённый пользователей
+          schema:
+            $ref: '#/definitions/users_transport_http.PatchUserRespons'
+        "400":
+          description: Bed request
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Изменение пользователя
+      tags:
+      - users
+swagger: "2.0"

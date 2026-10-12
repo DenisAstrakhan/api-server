@@ -23,6 +23,9 @@ import (
 	user_postgres_repository "github.com/DenisAstrakhan/api-server/internal/feature/users/repository/postgres"
 	users_service "github.com/DenisAstrakhan/api-server/internal/feature/users/service"
 	users_transport_http "github.com/DenisAstrakhan/api-server/internal/feature/users/transport/http"
+	web_file_system_repository "github.com/DenisAstrakhan/api-server/internal/feature/web/repository/file_system"
+	web_service "github.com/DenisAstrakhan/api-server/internal/feature/web/service"
+	web_transport_http "github.com/DenisAstrakhan/api-server/internal/feature/web/transport/http"
 	"go.uber.org/zap"
 )
 
@@ -72,11 +75,17 @@ func main() {
 	statisticsService := statistics_service.NewStatisticsService(statisticsRepository)
 	statisticsTransportHTTP := statistics_transport_http.NewStatisticsHTTPHandler(&statisticsService)
 
+	log.Debug("initiazling feature", zap.String("feature", "web"))
+	webRepository := web_file_system_repository.NewWebRepository()
+	webService := web_service.MewWebService(webRepository)
+	wedTransportHTTP := web_transport_http.NewWebHTTPHandler(&webService)
+
 	log.Debug("initiazling HTTP server")
+	httpConfig := core_http_server.NewConfigMust()
 	httpServer := core_http_server.NewHTTPServer(
-		core_http_server.NewConfigMust(),
+		httpConfig,
 		log,
-		core_http_middleware.CORS(),
+		core_http_middleware.CORS(httpConfig.AllowedOrigins),
 		core_http_middleware.RequestID(),
 		core_http_middleware.Loger(log),
 		core_http_middleware.Trace(),
@@ -91,6 +100,7 @@ func main() {
 
 	httpServer.RegisterAPIRouters(apiVersionRouterV1 /*apiVersionRouterV2*/)
 	httpServer.RegisterSwagger()
+	httpServer.RegisterRoutes(wedTransportHTTP.Routes()...)
 
 	if err := httpServer.Run(ctx); err != nil {
 		log.Error("HTTP server run error: %w", zap.Error(err))

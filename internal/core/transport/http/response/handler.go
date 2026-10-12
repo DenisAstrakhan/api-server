@@ -79,3 +79,12 @@ func (h *HTTPResponseHandler) errorResponse(statusCode int, err error, msg strin
 	h.JSONResponse(response, statusCode)
 
 }
+
+// Метод для отправки HTTP ответа с HTML страничкой
+func (h *HTTPResponseHandler) HTMLResponse(file []byte) {
+	h.rw.WriteHeader(http.StatusOK)
+	h.rw.Header().Set("Content-Typr", "text/html; charset=utf-8")
+	if _, err := h.rw.Write(file); err != nil {
+		h.log.Error("write HTML HTTP respons", zap.Error(err))
+	}
+}

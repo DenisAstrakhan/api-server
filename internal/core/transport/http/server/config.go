@@ -10,6 +10,7 @@ import (
 type config struct {
 	Addr            string        `envconfig:"ADDR" validate:"required"` //адрес на котором запускаем сервер
 	ShutdownTimeout time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"5s"`
+	AllowedOrigins  []string      `envconfig:"ALLOWED_ORIGINS" validate:"required"` //список разрешонных Origins для CORS
 }
 
 func NewConfig() (config, error) {

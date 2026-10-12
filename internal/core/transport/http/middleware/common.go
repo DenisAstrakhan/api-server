@@ -13,12 +13,13 @@ import (
 const requestIDHeader = "X-Request-ID"
 
 // Cross-Origin Resource Sharing, «совместное использование ресурсов между источниками»
-func CORS() Middlware {
+func CORS(allowedOriginsList []string) Middlware {
+	allowedOrigins := make(map[string]struct{})
+	for _, origin := range allowedOriginsList {
+		allowedOrigins[origin] = struct{}{}
+	}
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			allowedOrigins := map[string]struct{}{
-				"http://localhost:5050": {},
-			}
 			origin := r.Header.Get("Origin")
 			if _, ok := allowedOrigins[origin]; ok {
 				w.Header().Set("Access-Control-Allow-Origin", origin)

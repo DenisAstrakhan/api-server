@@ -55,6 +55,14 @@ func (s *HTTPServer) RegisterSwagger() {
 	)
 }
 
+// метод для регистрации router напрямую
+func (s *HTTPServer) RegisterRoutes(routes ...Route) {
+	for _, route := range routes {
+		pattern := fmt.Sprintf("%s %s", route.Method, route.Path)
+		s.mux.Handle(pattern, route.WithMiddlware())
+	}
+}
+
 func (s *HTTPServer) Run(ctx context.Context) error {
 	//навешиваем middleware на мультеплексер
 	mux := core_http_middleware.ChainMiddlare(s.mux, s.middleware...)
